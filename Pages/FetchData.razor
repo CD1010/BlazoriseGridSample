@@ -1,0 +1,87 @@
+﻿@page "/fetchdata"
+
+@using BlazoriseGridWeather.Data
+@using Blazorise.DataGrid
+@using Blazorise
+@inject WeatherForecastService ForecastService
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from a service.</p>
+
+@if (forecasts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+<DataGrid Data="forecasts" Editable="true" TItem="WeatherForecast" EditMode="Blazorise.DataGrid.DataGridEditMode.Inline">
+
+    <DataGridCommandColumn TItem="WeatherForecast" CellsEditableOnEditCommand="true"></DataGridCommandColumn>
+
+    <DataGridDateColumn TItem="WeatherForecast" Field="@nameof(WeatherForecast.Date)" Caption="Date" Editable="true"></DataGridDateColumn>
+    <DataGridDateColumn TItem="WeatherForecast" Field="@nameof(WeatherForecast.TemperatureC)" Caption="TempC" Editable="true"></DataGridDateColumn>
+
+
+    <DataGridSelectColumn TItem="WeatherForecast" Field="@nameof(WeatherForecast.TheCity)" Caption="City" Editable="true">
+        <DisplayTemplate>
+            @{
+                var name = (context as WeatherForecast).TheCity.Name;
+                @name
+            }
+
+        </DisplayTemplate>
+        <EditTemplate>
+            @{
+                <Blazorise.SelectEdit TValue="City" SelectedValue="@((City)(((CellEditContext)context).CellValue))" SelectedValueChanged="@( v => ((CellEditContext)context).CellValue = v)">
+                    @foreach (var item in Cities)
+                    {
+
+                        <SelectItem TValue="City" Value="@(item)">@item.Name</SelectItem>
+                    }
+                </Blazorise.SelectEdit>
+            }
+
+        </EditTemplate>
+
+    </DataGridSelectColumn>
+    @*<DataGridSelectColumn TItem="City" Field="@nameof(WeatherForecast.TheCity)" Caption="City" Editable="true">
+        <DisplayTemplate>
+            @{
+                var name = (context as City).Name;
+                @name
+            }
+
+        </DisplayTemplate>
+        <EditTemplate>
+            @{
+                <Blazorise.SelectEdit TValue="City" SelectedValue="@((City)(((CellEditContext)context).CellValue))" SelectedValueChanged="@( v => ((CellEditContext)context).CellValue = v)">
+                    @foreach (var item in Cities)
+                    {
+
+                        <SelectItem TValue="City" Value="@(item)">@item.Name</SelectItem>
+                    }
+                </Blazorise.SelectEdit>
+            }
+
+        </EditTemplate>
+
+    </DataGridSelectColumn>*@
+
+</DataGrid>
+   
+}
+
+@code {
+    private WeatherForecast[] forecasts;
+    private List<City> Cities;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Cities = new List<City>();
+        Cities.Add(new City() { Id = 1, Name = "New York" });
+        Cities.Add(new City() { Id = 2, Name = "Berlin" });
+        Cities.Add(new City() { Id = 3, Name = "London" });
+        forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
+    }
+}
